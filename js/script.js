@@ -1,3 +1,5 @@
+var spawntimer, movetimer;
+var drop_array = new Array();
 /**
  * The Drop class is a blueprint for each raindrop we generate
  * @author  John Doe
@@ -15,9 +17,9 @@ function Drop(){
 		this.item_on_page = document.createElement("div");
 		//give it a class which styles it in CSS to resemble a drop
 		this.item_on_page.className = "raindrop";
-		//store a random x and y position, different for each drop. I'm using screen width of 800, height of 600:
+		//store a random x position, different for each drop. I'm using screen width of 800, height of 600:
 		this.x = Math.floor(Math.random()*800);
-		this.y = Math.floor(Math.random()*600);
+		this.y = -50;//puts each new drop above top of screen
 		//use those x and y coordinates in the CSS to position the drop:
 		this.item_on_page.style.left = this.x + "px";
 		this.item_on_page.style.top = this.y + "px";
@@ -28,7 +30,31 @@ function Drop(){
 	*   The destroy function does lots of cleaning up when a drop is removed from the page
 	*/
 	this.destroy = function(){
+		//remove all splashes from the screen
+		var splashes = document.getElementsByClassName("splash");
+		for(var j=0; j ; j++){
+			document.body.removeChild(document.getElementsByClassName("splash")[j]);
+		}
+		//cause a splash animation right where the drop is
+		var newsplash = document.createElement("img");
+		//we'll reference the animation GIF, with random querystring
+		//so browser thinks animation is different each time and starts
+		//it playing from the beginning
+		newsplash.src = "img/splash.gif?"+Math.random();
+		//give each splash a classname so i can remove them:
+		newsplash.className="splash";
+		newsplash.style.position = "absolute";
+		//position the splash where the drop is
+		newsplash.style.left = this.x+"px";
+		newsplash.style.top = this.y+"px";
+		document.body.appendChild(newsplash);
+		//get this drop out of the array, First, find index # of this drop
+		var this_drops_index_num = drop_array.indexOf(this);
 		
+		//splice(indexNumber, howManyToRemove)
+		drop_array.splice(this_drops_index_num, 1);
+		//remove its graphic from the screen
+		document.body.removeChild(this.item_on_page);
 	}
 } //close the Drop class
 
@@ -36,10 +62,35 @@ function Drop(){
 onload=init;
 
 function init() {
+	//when game starts, start causing a spawn function to happen every so often
+	spawntimer = setInterval(spawn, 1000);
+	movetimer = setInterval(moveAllDrops, 1000/30);
+}
+/**
+ * generate a new Drop object every so often
+ */
+function spawn(){
 	//make an object that's an instance of the Drop Class:
-	var drop1 = new Drop();
-	drop1.create();
-	//make an object that's an instance of the Drop Class:
-	var drop2 = new Drop();
-	drop2.create();
+	var anotherdrop = new Drop();
+	anotherdrop.create();
+	//remember the newly-created drop by storing it in an array
+	drop_array.push(anotherdrop);
+}
+/**
+ * loop through all Drop objects, add to Y every so often
+ */
+function moveAllDrops(){
+	//for each drop in the drop_array, repeat what's in {}
+	for (var i=0; i<drop_array.length; i++){
+		//make a short reference to the current drop:
+		var currentdrop = drop_array[i];
+		//add to the current Y property of this drop
+		currentdrop.y += 5;
+		//apply the bigger y as the drop's 'top' property in CSS
+		currentdrop.item_on_page.style.top = currentdrop.y + "px";
+		//if the drop hits bottom of game screen, remove it
+		if(currentdrop.y > 400){
+			currentdrop.destroy();
+		}
+	}
 }

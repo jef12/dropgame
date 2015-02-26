@@ -1,5 +1,31 @@
 var spawntimer, movetimer;
 var drop_array = new Array();
+//make a user-controlled Bucket object on the screen
+var user_bucket = new Bucket(50,350,100,75);
+/**
+ *this class is the user controlled element that cathes the drops
+ */
+function Bucket(ux, uy, uw,uh){
+	this.x = ux;
+	this.y = uy;
+	this.width = uw;
+	this.height = uh;
+	this.item_on_page;
+	/** 
+	*	The create method creates a DIV that looks like a grey box on the page
+	*/
+	this.create = function(){
+		this.item_on_page = document.createElement("div");
+		this.item_on_page.style.left = this.x+"px";
+		this.item_on_page.style.top = this.y+"px";
+		this.item_on_page.style.width = this.width+"px";
+		this.item_on_page.style.height = this.height+"px";
+		this.item_on_page.style.position = "absolute";
+		this.item_on_page.style.left = this.x+"px";
+		this.item_on_page.style.backgroundColor = "#999";
+		document.body.appendChild(this.item_on_page);
+	}//end create() method
+}//end Bucket class
 /**
  * The Drop class is a blueprint for each raindrop we generate
  * @author  John Doe
@@ -8,6 +34,8 @@ var drop_array = new Array();
 function Drop(){
 	this.x; //starts empty, will keep track of each drop's left-right position as a #
 	this.y; //starts empty, will keep track of each drop's up-down position as a #
+	this.width=50;//keep track of drop's width, for collisions
+	this.height=50;
 	this.item_on_page; //represents drop's physical presence on the screen
 	/** 
 	*	The create method creates a DIV that looks like a blue drop on the page
@@ -65,8 +93,22 @@ function init() {
 	//when game starts, start causing a spawn function to happen every so often
 	spawntimer = setInterval(spawn, 1000);
 	movetimer = setInterval(moveAllDrops, 1000/30);
+	//make a user-controlled Bucket object on the screen
+	
+	user_bucket.create();
+	//event handler: when a key is pressed, do the checkKey function
+	document.onkeydown = function(){
+		checkKey();
+	}
 }
 /**
+ *this method moves the bucket if the appropriate key was hit
+ */
+function checkKey(){
+	user_bucket.x +=10;
+	user_bucket.item_on_page.style.left = user_bucket.x+"px";
+}
+ /**
  * generate a new Drop object every so often
  */
 function spawn(){
